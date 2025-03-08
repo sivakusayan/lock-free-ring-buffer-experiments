@@ -1,6 +1,8 @@
 #ifndef _RING_BUFFER_HEADER_GUARD
 #define _RING_BUFFER_HEADER_GUARD
 
+#include <stdlib.h>
+
 // Return Codes
 #define RING_BUFFER_OK 0
 #define RING_BUFFER_EMPTY -1
