@@ -8,8 +8,9 @@
 
 /**
  * Returns the size, in bytes, of the desired ring buffer.
+ * Returns 0 if the computed size overflows. 
  */
-void ring_buffer_size(size_t count, size_t item_size);
+size_t ring_buffer_size(size_t count, size_t item_size);
 /**
  * Initializes a ring buffer into the provided buffer. The caller should use
  * ring_buffer_size() to determine how big the buffer should be.
