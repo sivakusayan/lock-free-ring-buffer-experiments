@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "ring-buffer.h"
 
 struct ring_buffer_header {
