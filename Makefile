@@ -1,11 +1,19 @@
-CC_FLAGS := -Wall -Wextra -Wconversion
+override CFLAGS += -Wall -Wextra -Wconversion
+ifeq ($(DEBUG), 1)
+	override CFLAGS += -g3
+	OUT_DIR := debug
+else
+	override CFLAGS += -g -O3
+	OUT_DIR := release
+endif
 
-test: bin/test-runner
-	./bin/test-runner
+test: ${OUT_DIR}/test-runner
+	./${OUT_DIR}/test-runner
 
-bin/test-runner: test-runner.c ring-buffer.c ring-buffer-test.c
-	mkdir -p bin
-	clang ${CC_FLAGS} test-runner.c ring-buffer.c ring-buffer-test.c -o bin/test-runner
+${OUT_DIR}/test-runner: test-runner.c ring-buffer.c ring-buffer-test.c
+	mkdir -p ${OUT_DIR}
+	clang ${CFLAGS} test-runner.c ring-buffer.c ring-buffer-test.c -o ${OUT_DIR}/test-runner
 
 clean:
-	rm -rf bin
+	rm -rf debug
+	rm -rf release
