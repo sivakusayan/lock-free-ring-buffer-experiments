@@ -17,3 +17,5 @@ ${OUT_DIR}/test-runner: test-runner.c ring-buffer.c ring-buffer-test.c
 clean:
 	rm -rf debug
 	rm -rf release
+
+.PHONY: test clean
