@@ -1,3 +1,7 @@
+##========================
+# Compiler Settings
+##========================
+
 override CFLAGS += -Wall -Wextra -Wconversion
 ifeq ($(DEBUG), 1)
 	override CFLAGS += -g3
@@ -13,12 +17,19 @@ else
 	OUT_DIR := release
 endif
 
+##========================
+# Build Recipes
+##========================
+
+${OUT_DIR}/ring-buffer.so: ring-buffer.c
+	mkdir -p ${OUT_DIR}
+	clang -fPIC -shared ${CFLAGS} $^ -o ${OUT_DIR}/ring-buffer.so
+
+${OUT_DIR}/test-runner: ${OUT_DIR}/ring-buffer.so test-runner.c ring-buffer-test.c
+	clang ${CFLAGS} $^ -o ${OUT_DIR}/test-runner
+
 test: ${OUT_DIR}/test-runner
 	./${OUT_DIR}/test-runner
-
-${OUT_DIR}/test-runner: test-runner.c ring-buffer.c ring-buffer-test.c
-	mkdir -p ${OUT_DIR}
-	clang ${CFLAGS} test-runner.c ring-buffer.c ring-buffer-test.c -o ${OUT_DIR}/test-runner
 
 clean:
 	rm -rf debug
