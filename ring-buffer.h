@@ -4,9 +4,9 @@
 #include <stdlib.h>
 
 // Return Codes
-#define RING_BUFFER_OK 0
-#define RING_BUFFER_EMPTY -1
-#define RING_BUFFER_FULL -2
+#define RING_BUFFER_OK			 0
+#define RING_BUFFER_EMPTY		 -1
+#define RING_BUFFER_FULL		 -2
 #define RING_BUFFER_INVALID_ARGS -3
 
 /**
