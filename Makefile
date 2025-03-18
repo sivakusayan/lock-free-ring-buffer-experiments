@@ -13,7 +13,7 @@ ifeq ($(DEBUG), 1)
 		override CFLAGS += -fsanitize=address,undefined,leak
 	endif
 else
-	override CFLAGS += -g -O3
+	override CFLAGS += -g -O3 -DNDEBUG
 	OUT_DIR := release
 endif
 
