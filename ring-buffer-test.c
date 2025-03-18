@@ -45,4 +45,50 @@ TEST("Returns RING_BUFFER_OK if a valid ring buffer can be constructed.")
 	free(buffer);
 }
 ENDTESTGROUP()
+
+TESTGROUP("ring_buffer_push")
+TEST("Can successfully push an element.")
+{
+	buffer = malloc(ring_buffer_size(3, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+
+	int test = 3;
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+
+	free(buffer);
+}
+TEST("Can push an element up to the capacity of the ring buffer")
+{
+	buffer = malloc(ring_buffer_size(3, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+
+	int test = 3;
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+
+	free(buffer);
+}
+TEST(
+	"Pushing more than the capacity of the ring buffer returns "
+	"RING_BUFFER_FULL")
+{
+	buffer = malloc(ring_buffer_size(3, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+
+	int test = 3;
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+
+	free(buffer);
+}
+ENDTESTGROUP()
+
+TESTGROUP("ring_buffer_pop")
+TEST("Can successfully pop an element.")
+TEST("Can pop elements until there are no more elements left over.")
+TEST("Popping more elements than there are available returns RING_BUFFER_EMPTY")
+ENDTESTGROUP()
 #endif
