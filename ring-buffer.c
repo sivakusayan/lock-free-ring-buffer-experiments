@@ -83,13 +83,11 @@ int ring_buffer_pop(void* ring_buffer, void* item)
 	assert(ring_buffer);
 	assert(item);
 	struct ring_header* hdr = get_header(ring_buffer);
-
-	size_t next_read_index = get_next_index(hdr->write_index, hdr->max_index);
-	if (next_read_index > hdr->write_index) { return RING_BUFFER_EMPTY; }
+	if (hdr->read_index == hdr->write_index) { return RING_BUFFER_EMPTY; }
 
 	void* buffer = get_buffer(ring_buffer);
 	memcpy(item, buffer + (hdr->read_index * hdr->item_size), hdr->item_size);
-	hdr->read_index = next_read_index;
+	hdr->read_index = get_next_index(hdr->read_index, hdr->max_index);
 
 	return RING_BUFFER_OK;
 };

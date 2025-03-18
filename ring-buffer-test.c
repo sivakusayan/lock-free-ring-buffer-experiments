@@ -88,7 +88,62 @@ ENDTESTGROUP()
 
 TESTGROUP("ring_buffer_pop")
 TEST("Can successfully pop an element.")
+{
+	int test = 3;
+	buffer = malloc(ring_buffer_size(3, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+
+	int out;
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == test);
+
+	free(buffer);
+}
 TEST("Can pop elements until there are no more elements left over.")
+{
+	int first = 3;
+	int second = 4;
+	int third = 5;
+	buffer = malloc(ring_buffer_size(3, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &first) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &second) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &third) == RING_BUFFER_OK);
+
+	int out;
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == first);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == second);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == third);
+
+	free(buffer);
+}
 TEST("Popping more elements than there are available returns RING_BUFFER_EMPTY")
+{
+	int out;
+	buffer = malloc(ring_buffer_size(3, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+
+	int first = 3;
+	int second = 4;
+	int third = 5;
+	ASSERT(ring_buffer_push(buffer, &first) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &second) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &third) == RING_BUFFER_OK);
+
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == first);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == second);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == third);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+
+	free(buffer);
+}
 ENDTESTGROUP()
 #endif
