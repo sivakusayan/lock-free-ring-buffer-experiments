@@ -62,6 +62,24 @@ TEST("Can successfully push an element.")
 
 	free(buffer);
 }
+TEST(
+	"Can push an element up to the capacity of a ring buffer that can only "
+	"hold one element.")
+{
+	buffer = malloc(ring_buffer_size(1, sizeof(int)));
+	ASSERT(ring_buffer_init(buffer, 1, sizeof(int)) == RING_BUFFER_OK);
+
+	int test = 3;
+	int out;
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+
+	free(buffer);
+}
 TEST("Can push an element up to the capacity of the ring buffer")
 {
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
@@ -81,12 +99,13 @@ TEST(
 {
 	// First, set the write pointer to be somewhere in the middle of the buffer.
 	int test = 3;
+	int out;
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_pop(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_pop(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
 
 	// Next, make sure that we can have writes wrap around the buffer.
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
