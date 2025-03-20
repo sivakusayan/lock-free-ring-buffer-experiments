@@ -12,14 +12,14 @@
 /**
  * Returns the size, in bytes, of the desired ring buffer.
  * Returns 0 if the computed size overflows, or if either
- * `count` or `item_size` are zero.
+ * `capacity` or `item_size` are zero.
  */
-size_t ring_buffer_size(size_t count, size_t item_size);
+size_t ring_buffer_size(size_t capacity, size_t item_size);
 
 /**
  * Returns RING_BUFFER_INVALID_ARGS if either:
  * - `ring_buffer` is null
- * - `count` or `item_size` is zero
+ * - `capacity` or `item_size` is zero
  *
  * Else returns RING_BUFFER_OK, and initializes a ring buffer into the
  * provided memory.
@@ -27,7 +27,7 @@ size_t ring_buffer_size(size_t count, size_t item_size);
  * The caller should use `ring_buffer_size()` to determine how large the
  * allocated memory being pointed to should be.
  */
-int ring_buffer_init(void* ring_buffer, size_t count, size_t item_size);
+int ring_buffer_init(void* ring_buffer, size_t capacity, size_t item_size);
 
 /**
  * Returns RING_BUFFER_INVALID_ARGS if either `ring_buffer` or `item`
