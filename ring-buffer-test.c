@@ -66,17 +66,24 @@ TEST("Can push an element up to the capacity of the ring buffer")
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
 
 	free(buffer);
 }
 TEST(
-	"Pushing more than the capacity of the ring buffer returns "
-	"RING_BUFFER_FULL")
+	"Can push, wrapping around the ring buffer, up to the capacity of the ring "
+	"buffer.")
 {
+	// First, set the write pointer to be somewhere in the middle of the buffer.
+	int test = 3;
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &test) == RING_BUFFER_OK);
 
-	int test = 3;
+	// Next, make sure that we can have writes wrap around the buffer.
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
@@ -118,23 +125,37 @@ TEST("Can pop elements until there are no more elements left over.")
 	ASSERT(out == second);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
 	ASSERT(out == third);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
 
 	free(buffer);
 }
-TEST("Popping more elements than there are available returns RING_BUFFER_EMPTY")
+TEST(
+	"Can pop elements until there are no elements left over, even when "
+	"wrapping around the ring buffer.")
 {
 	int out;
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
 
+	// First: Move the read pointer to the middle of the buffer.
 	int first = 3;
 	int second = 4;
 	int third = 5;
 	ASSERT(ring_buffer_push(buffer, &first) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_push(buffer, &second) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &third) == RING_BUFFER_OK);
 
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == first);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(out == second);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+
+	// Second: Add some more elements, then test that wrap-around
+	// behavior works when popping.
+	ASSERT(ring_buffer_push(buffer, &first) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &second) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &third) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
 	ASSERT(out == first);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
