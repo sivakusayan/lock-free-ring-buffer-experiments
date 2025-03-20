@@ -2,6 +2,15 @@
 #include <stdint.h>
 #include "ring-buffer.h"
 void* buffer;
+struct test_struct
+{
+	double some_double;
+	int some_int;
+};
+static void test_struct_assert_equal(struct test_struct a, struct test_struct b)
+{
+	ASSERT(a.some_double == b.some_double && a.some_int == b.some_int);
+}
 
 #elif defined TESTS
 TESTGROUP("ring_buffer_size")
@@ -57,8 +66,8 @@ TEST("Can successfully push an element.")
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
 
-	int test = 3;
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	int in = 3;
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
 
 	free(buffer);
 }
@@ -69,14 +78,14 @@ TEST(
 	buffer = malloc(ring_buffer_size(1, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 1, sizeof(int)) == RING_BUFFER_OK);
 
-	int test = 3;
+	int in = 3;
 	int out;
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_FULL);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_FULL);
 
 	free(buffer);
 }
@@ -85,11 +94,11 @@ TEST("Can push an element up to the capacity of the ring buffer")
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
 
-	int test = 3;
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+	int in = 3;
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_FULL);
 
 	free(buffer);
 }
@@ -98,20 +107,42 @@ TEST(
 	"buffer.")
 {
 	// First, set the write pointer to be somewhere in the middle of the buffer.
-	int test = 3;
+	int in = 3;
 	int out;
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
 
 	// Next, make sure that we can have writes wrap around the buffer.
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_FULL);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_FULL);
+
+	free(buffer);
+}
+TEST(
+	"Can push structures, wrapping around the ring buffer, up to the capacity "
+	"of the ring buffer.")
+{
+	// First, set the write pointer to be somewhere in the middle of the buffer.
+	struct test_struct in = {.some_double = 3, .some_int = 2};
+	struct test_struct out;
+	buffer = malloc(ring_buffer_size(3, sizeof(struct test_struct)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+
+	// Next, make sure that we can have writes wrap around the buffer.
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_FULL);
 
 	free(buffer);
 }
@@ -120,14 +151,14 @@ ENDTESTGROUP()
 TESTGROUP("ring_buffer_pop")
 TEST("Can successfully pop an element.")
 {
-	int test = 3;
+	int in = 3;
 	buffer = malloc(ring_buffer_size(3, sizeof(int)));
 	ASSERT(ring_buffer_init(buffer, 3, sizeof(int)) == RING_BUFFER_OK);
-	ASSERT(ring_buffer_push(buffer, &test) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &in) == RING_BUFFER_OK);
 
 	int out;
 	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
-	ASSERT(out == test);
+	ASSERT(out == in);
 
 	free(buffer);
 }
@@ -190,5 +221,44 @@ TEST(
 
 	free(buffer);
 }
+TEST(
+	"Can pop structures until there are no elements left over, even when "
+	"wrapping around the ring buffer.")
+{
+	struct test_struct out;
+	buffer = malloc(ring_buffer_size(3, sizeof(struct test_struct)));
+	ASSERT(ring_buffer_init(buffer, 3, sizeof(struct test_struct)) ==
+		   RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+
+	// First: Move the read pointer to the middle of the buffer.
+	struct test_struct first = {.some_double = 0, .some_int = 1};
+	struct test_struct second = {.some_double = 2, .some_int = 3};
+	struct test_struct third = {.some_double = 4, .some_int = 5};
+	ASSERT(ring_buffer_push(buffer, &first) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &second) == RING_BUFFER_OK);
+
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	test_struct_assert_equal(out, first);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	test_struct_assert_equal(out, second);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+
+	// Second: Add some more elements, then test that wrap-around
+	// behavior works when popping.
+	ASSERT(ring_buffer_push(buffer, &first) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &second) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_push(buffer, &third) == RING_BUFFER_OK);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	test_struct_assert_equal(out, first);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	test_struct_assert_equal(out, second);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_OK);
+	test_struct_assert_equal(out, third);
+	ASSERT(ring_buffer_pop(buffer, &out) == RING_BUFFER_EMPTY);
+
+	free(buffer);
+}
+
 ENDTESTGROUP()
 #endif
