@@ -2,6 +2,7 @@
 # Compiler Settings
 ##========================
 
+SRC_DIR = src
 override CFLAGS += -Wall -Wextra -Wconversion
 ifeq ($(DEBUG), 1)
 	override CFLAGS += -g3
@@ -21,11 +22,11 @@ endif
 # Build Recipes
 ##========================
 
-${OUT_DIR}/ring-buffer.so: ring-buffer.c
+${OUT_DIR}/ring-buffer.so: ${SRC_DIR}/ring-buffer.c
 	mkdir -p ${OUT_DIR}
 	clang -fPIC -shared ${CFLAGS} $^ -o ${OUT_DIR}/ring-buffer.so
 
-${OUT_DIR}/test-runner: ${OUT_DIR}/ring-buffer.so test-runner.c ring-buffer-test.c
+${OUT_DIR}/test-runner: ${OUT_DIR}/ring-buffer.so ${SRC_DIR}/test-runner.c ${SRC_DIR}/ring-buffer-test.c
 	clang ${CFLAGS} $^ -o ${OUT_DIR}/test-runner
 
 test: ${OUT_DIR}/test-runner
