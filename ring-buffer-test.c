@@ -15,6 +15,11 @@ TEST(
 {
 	ASSERT(ring_buffer_size(1, SIZE_MAX - 1) == 0);
 }
+TEST("Returns 0 when either the size or count are 0.")
+{
+	ASSERT(ring_buffer_size(0, 1) == 0);
+	ASSERT(ring_buffer_size(1, 0) == 0);
+}
 TEST("Returns a non-zero size if a valid ring buffer size can be calculated.")
 {
 	ASSERT(ring_buffer_size(10, 10) > 0);

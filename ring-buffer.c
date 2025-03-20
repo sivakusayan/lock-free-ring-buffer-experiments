@@ -29,8 +29,7 @@ static void* get_buffer(void* ring_buffer)
 
 size_t ring_buffer_size(size_t count, size_t item_size)
 {
-	assert(count > 0);
-	assert(item_size > 0);
+	if (count == 0 || item_size == 0) { return 0; }
 
 	// Make sure that the buffer size will not overflow.
 	if (count + 1 > SIZE_MAX / item_size) { return 0; }

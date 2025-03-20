@@ -11,9 +11,8 @@
 
 /**
  * Returns the size, in bytes, of the desired ring buffer.
- * Returns 0 if the computed size overflows.
- *
- * Callers should make sure neither `count` nor `item_size` are zero.
+ * Returns 0 if the computed size overflows, or if either
+ * `count` or `item_size` are zero.
  */
 size_t ring_buffer_size(size_t count, size_t item_size);
 
