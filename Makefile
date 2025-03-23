@@ -22,7 +22,7 @@ endif
 # Build Recipes
 ##========================
 
-all: ${OUT_DIR}/ring-buffer.a ${OUT_DIR}/ring-buffer.so
+all: ${OUT_DIR}/ring-buffer.a ${OUT_DIR}/ring-buffer.so ${OUT_DIR}/ring-buffer.s
 
 ${OUT_DIR}/ring-buffer.a: ${SRC_DIR}/ring-buffer.c
 	mkdir -p ${OUT_DIR}
@@ -32,6 +32,11 @@ ${OUT_DIR}/ring-buffer.a: ${SRC_DIR}/ring-buffer.c
 ${OUT_DIR}/ring-buffer.so: ${SRC_DIR}/ring-buffer.c
 	mkdir -p ${OUT_DIR}
 	clang -fPIC -shared ${CFLAGS} $^ -o ${OUT_DIR}/ring-buffer.so
+
+${OUT_DIR}/ring-buffer.s: ${SRC_DIR}/ring-buffer.c
+	mkdir -p ${OUT_DIR}
+	clang -fPIC -S ${CFLAGS} $^ -o ${OUT_DIR}/ring-buffer.s
+
 
 ${OUT_DIR}/test-runner: ${OUT_DIR}/ring-buffer.so ${SRC_DIR}/test-runner.c ${SRC_DIR}/ring-buffer-test.c
 	clang ${CFLAGS} $^ -o ${OUT_DIR}/test-runner
