@@ -36,7 +36,7 @@ int ring_buffer_init(void* ring_buffer, size_t capacity, size_t item_size);
  * Else, returns RING_BUFFER_OK and appends a copy of the data pointed
  * to by `item` to the start of the ring buffer.
  **/
-int ring_buffer_push(void* ring_buffer, void* item);
+int ring_buffer_push(void* restrict ring_buffer, void* restrict item);
 
 /**
  * Returns RING_BUFFER_INVALID_ARGS if either `ring_buffer` or `item`
@@ -45,6 +45,6 @@ int ring_buffer_push(void* ring_buffer, void* item);
  * Else, returns RING_BUFFER_OK and copies the member at the end of
  * the ring buffer into the `item` pointer, then removes that member.
  */
-int ring_buffer_pop(void* ring_buffer, void* item);
+int ring_buffer_pop(void* restrict ring_buffer, void* restrict item);
 
 #endif
