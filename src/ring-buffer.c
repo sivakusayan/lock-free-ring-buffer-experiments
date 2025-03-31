@@ -6,9 +6,9 @@
 struct ring_header
 {
 	size_t item_size;
-	size_t write_index;
-	size_t read_index;
-	size_t max_index;
+	void* write_ptr;
+	void* read_ptr;
+	void* buffer_end_ptr;
 };
 
 struct ring_buffer
@@ -48,10 +48,12 @@ int ring_buffer_init(void* ring_buffer, size_t capacity, size_t item_size)
 	if (capacity == 0 || item_size == 0) { return RING_BUFFER_INVALID_ARGS; }
 
 	struct ring_header* header = get_header(ring_buffer);
-	header->max_index = capacity;
 	header->item_size = item_size;
-	header->write_index = 0;
-	header->read_index = 0;
+
+	void* start = ring_buffer + sizeof(struct ring_header);
+	header->write_ptr = start;
+	header->read_ptr = start;
+	header->buffer_end_ptr = start + item_size * (capacity + 1);
 	return RING_BUFFER_OK;
 }
 
@@ -59,11 +61,14 @@ int ring_buffer_init(void* ring_buffer, size_t capacity, size_t item_size)
  * Gives the next index in our ring buffer given some starting index,
  * wrapping around the ring buffer if necessary.
  */
-static size_t get_next_index(size_t current_index, size_t max_index)
+static void* get_next_ptr(void* start_ptr,
+						  void* current_ptr,
+						  void* end_ptr,
+						  size_t item_size)
 {
-	assert(current_index <= max_index);
-	if (current_index + 1 > max_index) { return 0; }
-	return current_index + 1;
+	assert(current_ptr <= end_ptr);
+	if (current_ptr + item_size >= end_ptr) { return start_ptr; }
+	return current_ptr + item_size;
 }
 
 int ring_buffer_push(void* restrict ring_buffer, void* restrict item)
@@ -71,13 +76,14 @@ int ring_buffer_push(void* restrict ring_buffer, void* restrict item)
 	assert(ring_buffer);
 	assert(item);
 	struct ring_header* hdr = get_header(ring_buffer);
-
-	size_t next_write_index = get_next_index(hdr->write_index, hdr->max_index);
-	if (next_write_index == hdr->read_index) { return RING_BUFFER_FULL; }
-
 	void* buffer = get_buffer(ring_buffer);
-	memcpy(buffer + (hdr->write_index * hdr->item_size), item, hdr->item_size);
-	hdr->write_index = next_write_index;
+
+	void* next_write_ptr = get_next_ptr(
+		buffer, hdr->write_ptr, hdr->buffer_end_ptr, hdr->item_size);
+	if (next_write_ptr == hdr->read_ptr) { return RING_BUFFER_FULL; }
+
+	memcpy(hdr->write_ptr, item, hdr->item_size);
+	hdr->write_ptr = next_write_ptr;
 
 	return RING_BUFFER_OK;
 };
@@ -87,11 +93,13 @@ int ring_buffer_pop(void* restrict ring_buffer, void* restrict item)
 	assert(ring_buffer);
 	assert(item);
 	struct ring_header* hdr = get_header(ring_buffer);
-	if (hdr->read_index == hdr->write_index) { return RING_BUFFER_EMPTY; }
-
 	void* buffer = get_buffer(ring_buffer);
-	memcpy(item, buffer + (hdr->read_index * hdr->item_size), hdr->item_size);
-	hdr->read_index = get_next_index(hdr->read_index, hdr->max_index);
+
+	if (hdr->read_ptr == hdr->write_ptr) { return RING_BUFFER_EMPTY; }
+
+	memcpy(item, hdr->read_ptr, hdr->item_size);
+	hdr->read_ptr = get_next_ptr(
+		buffer, hdr->read_ptr, hdr->buffer_end_ptr, hdr->item_size);
 
 	return RING_BUFFER_OK;
 };
