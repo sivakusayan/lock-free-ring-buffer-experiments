@@ -24,13 +24,15 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	for (int i = 0; i < CAPACITY; i++) {
-		ring_buffer_push(buffer, &in);
-	}
-
 	struct test_struct out;
-	for (int j = 0; j < CAPACITY; j++) {
-		ring_buffer_pop(buffer, &out);
+	for (int j = 0; j < 40; j++) {
+		for (int i = 0; i < CAPACITY; i++) {
+			ring_buffer_push(buffer, &in);
+		}
+
+		for (int j = 0; j < CAPACITY; j++) {
+			ring_buffer_pop(buffer, &out);
+		}
 	}
 
 	printf("Reading from `out` to prevent optimization: %f", out.some_double);
