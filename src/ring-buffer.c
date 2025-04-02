@@ -27,13 +27,23 @@ static void* get_buffer(void* ring_buffer)
 	return &((struct ring_buffer*)ring_buffer)->buffer;
 }
 
+static size_t get_capacity_to_allocate(size_t capacity, size_t item_size)
+{
+	size_t allocated_capacity = 0x1;
+	while (allocated_capacity - 1 < capacity) {
+		if (allocated_capacity > SIZE_MAX / item_size) { return 0; }
+		allocated_capacity = allocated_capacity << 1;
+	}
+	return allocated_capacity;
+}
+
 size_t ring_buffer_size(size_t capacity, size_t item_size)
 {
 	if (capacity == 0 || item_size == 0) { return 0; }
 
-	// Make sure that the buffer size will not overflow.
-	if (capacity > (SIZE_MAX / item_size) - 1) { return 0; }
-	size_t buffer_size = (capacity + 1) * item_size;
+	size_t capacity_to_allocate = get_capacity_to_allocate(capacity, item_size);
+	if (capacity_to_allocate == 0) { return 0; }
+	size_t buffer_size = capacity_to_allocate * item_size;
 
 	// Even if the buffer size didn't overflow, make sure adding the header size
 	// to it won't either!
@@ -45,9 +55,11 @@ int ring_buffer_init(void* ring_buffer, size_t capacity, size_t item_size)
 {
 	if (!ring_buffer) { return RING_BUFFER_INVALID_ARGS; }
 	if (capacity == 0 || item_size == 0) { return RING_BUFFER_INVALID_ARGS; }
+	size_t capacity_to_allocate = get_capacity_to_allocate(capacity, item_size);
+	if (capacity_to_allocate == 0) { return RING_BUFFER_INVALID_ARGS; }
 
 	struct ring_header* header = get_header(ring_buffer);
-	header->max_index = capacity;
+	header->max_index = capacity_to_allocate - 1;
 	header->item_size = item_size;
 	header->write_index = 0;
 	header->read_index = 0;
@@ -61,8 +73,7 @@ int ring_buffer_init(void* ring_buffer, size_t capacity, size_t item_size)
 static size_t get_next_index(size_t current_index, size_t max_index)
 {
 	assert(current_index <= max_index);
-	if (current_index + 1 > max_index) { return 0; }
-	return current_index + 1;
+	return (current_index + 1) & max_index;
 }
 
 int ring_buffer_push(void* restrict ring_buffer, void* restrict item)
