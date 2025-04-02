@@ -30,11 +30,10 @@ static void* get_buffer(void* ring_buffer)
 size_t ring_buffer_size(size_t capacity, size_t item_size)
 {
 	if (capacity == 0 || item_size == 0) { return 0; }
-	capacity += 1;
 
 	// Make sure that the buffer size will not overflow.
-	if (capacity > SIZE_MAX / item_size) { return 0; }
-	size_t buffer_size = capacity * item_size;
+	if (capacity > (SIZE_MAX / item_size) - 1) { return 0; }
+	size_t buffer_size = (capacity + 1) * item_size;
 
 	// Even if the buffer size didn't overflow, make sure adding the header size
 	// to it won't either!
