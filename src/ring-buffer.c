@@ -56,7 +56,7 @@ static size_t get_next_index(size_t current_index, size_t max_index)
 	return current_index + 1;
 }
 
-int ring_buffer_push(void* restrict ring_buffer, void* restrict item)
+int ring_buffer_push(void* restrict ring_buffer, const void* restrict item)
 {
 	assert(ring_buffer);
 	assert(item);
