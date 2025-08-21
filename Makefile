@@ -47,8 +47,6 @@ ${OUT_DIR}/benchmark: ${SRC_DIR}/benchmark.c ${OUT_DIR}/ring-buffer.a
 test: ${OUT_DIR}/test-runner
 	./${OUT_DIR}/test-runner
 
-benchmark: ${OUT_DIR}/benchmark
-
 clean:
 	rm -rf debug
 	rm -rf release
